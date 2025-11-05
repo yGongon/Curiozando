@@ -1,12 +1,14 @@
-
-
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set");
+// WARNING: Storing API keys directly in the code is not secure for production.
+// This is done here for demonstration purposes in this specific environment.
+const API_KEY = "AIzaSyAvy1ldiuJj7H7fUZL_CgK1Kfoau73385A";
+
+if (!API_KEY) {
+    throw new Error("API_KEY is not set. Please add your Gemini API key.");
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 interface GeneratedContent {
     title: string;

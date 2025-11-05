@@ -19,6 +19,8 @@ const HomePage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
     const postsPerPage = 12;
 
     useEffect(() => {
@@ -27,6 +29,7 @@ const HomePage: React.FC = () => {
                 setLoading(true);
                 const fetchedPosts = await getPosts();
                 setPosts(fetchedPosts);
+                setFilteredPosts(fetchedPosts);
             } catch (err) {
                 setError("Falha ao carregar os posts. Tente novamente mais tarde.");
                 console.error(err);
@@ -37,11 +40,21 @@ const HomePage: React.FC = () => {
         fetchPosts();
     }, []);
 
+    useEffect(() => {
+        const lowercasedQuery = searchQuery.toLowerCase();
+        const results = posts.filter(post => 
+            post.title.toLowerCase().includes(lowercasedQuery) ||
+            post.deck.toLowerCase().includes(lowercasedQuery)
+        );
+        setFilteredPosts(results);
+        setCurrentPage(1); // Reset to first page on new search
+    }, [searchQuery, posts]);
+
     const indexOfLastPost = currentPage * postsPerPage;
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
-    const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+    const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
 
-    const totalPages = Math.ceil(posts.length / postsPerPage);
+    const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
     const paginate = (pageNumber: number) => {
       if (pageNumber < 1 || pageNumber > totalPages) return;
@@ -70,12 +83,14 @@ const HomePage: React.FC = () => {
                           type="text"
                           placeholder="Buscar curiosidades..."
                           className="w-full py-3 pl-4 pr-10 border-2 border-gray-200 rounded-full focus:outline-none focus:border-primary transition-colors"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                     </div>
 
                     {/* Articles Grid */}
-                    {posts.length > 0 ? (
+                    {filteredPosts.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {currentPosts.map(post => (
                                 <PostCard key={post.id} post={post} />
@@ -83,8 +98,12 @@ const HomePage: React.FC = () => {
                         </div>
                     ) : (
                         <div className="text-center py-10 col-span-2">
-                            <h2 className="text-2xl font-bold text-secondary">Nenhum post encontrado.</h2>
-                            <p className="text-text-muted mt-2">Que tal gerar o primeiro no painel de admin?</p>
+                            <h2 className="text-2xl font-bold text-secondary">
+                                {posts.length > 0 ? 'Nenhum resultado encontrado.' : 'Nenhum post encontrado.'}
+                            </h2>
+                            <p className="text-text-muted mt-2">
+                                {posts.length > 0 ? 'Tente uma busca diferente.' : 'Que tal gerar o primeiro no painel de admin?'}
+                            </p>
                         </div>
                     )}
 
