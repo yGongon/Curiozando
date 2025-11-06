@@ -9,6 +9,9 @@ import AdminDashboard from './pages/AdminDashboard';
 import LoginPage from './pages/LoginPageActual'; // New Login Page
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './hooks/useAuth';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsOfUsePage from './pages/TermsOfUsePage';
+import CategoryPage from './pages/CategoryPage';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -33,13 +36,10 @@ const App: React.FC = () => {
               {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
               <Route path="/article/:id" element={<ArticlePage />} />
-              <Route path="/category/curiosidades" element={<PlaceholderPage title="Curiosidades" />} />
-              <Route path="/category/fatos-do-mundo" element={<PlaceholderPage title="Fatos do Mundo" />} />
-              <Route path="/category/misterios" element={<PlaceholderPage title="Mistérios" />} />
-              <Route path="/category/ciencia" element={<PlaceholderPage title="Ciência" />} />
+              <Route path="/category/:slug" element={<CategoryPage />} />
               <Route path="/contact" element={<PlaceholderPage title="Contato" />} />
-              <Route path="/privacy-policy" element={<PlaceholderPage title="Política de Privacidade" />} />
-              <Route path="/terms-of-use" element={<PlaceholderPage title="Termos de Uso" />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms-of-use" element={<TermsOfUsePage />} />
 
               {/* Admin Routes */}
               <Route path="/login" element={<LoginPage />} />

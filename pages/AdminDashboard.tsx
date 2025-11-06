@@ -5,16 +5,20 @@ import { Post } from '../types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+const categories = ['Curiosidades', 'Fatos do Mundo', 'Mistérios', 'Ciência'];
+
 interface GeneratedPostData {
   title: string;
   deck: string;
   content: string;
   imageUrl: string;
+  category: string;
   sources: Array<{ title: string; uri: string; }>;
 }
 
 const AdminDashboard: React.FC = () => {
   const [theme, setTheme] = useState('');
+  const [category, setCategory] = useState(categories[0]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [generatedPost, setGeneratedPost] = useState<GeneratedPostData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -47,7 +51,7 @@ const AdminDashboard: React.FC = () => {
     try {
       const content = await generateBlogPostContent(theme);
       const imageUrl = await generateBlogImage(content.title);
-      setGeneratedPost({ ...content, imageUrl });
+      setGeneratedPost({ ...content, imageUrl, category });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred during generation.');
     } finally {
@@ -85,7 +89,12 @@ const AdminDashboard: React.FC = () => {
   const handleEditSave = async () => {
     if (!editingPost) return;
     try {
-        await updatePost(editingPost.id, { title: editingPost.title, deck: editingPost.deck, content: editingPost.content });
+        await updatePost(editingPost.id, { 
+          title: editingPost.title, 
+          deck: editingPost.deck, 
+          content: editingPost.content,
+          category: editingPost.category,
+        });
         setEditingPost(null);
         await fetchPosts();
     } catch (err) {
@@ -102,12 +111,25 @@ const AdminDashboard: React.FC = () => {
       <section className="bg-gray-50 p-8 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold font-display text-secondary mb-4">Gerar Novo Post</h2>
         <div className="space-y-4">
-          <textarea
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-            placeholder="Digite um tema ou tópico para a IA escrever... ex: 'A história surpreendente do garfo'"
-            className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none transition-all h-24"
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tema do Post</label>
+            <textarea
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              placeholder="Digite um tema ou tópico para a IA escrever... ex: 'A história surpreendente do garfo'"
+              className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none transition-all h-24"
+            />
+          </div>
+           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full md:w-1/2 p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+            >
+              {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            </select>
+          </div>
           <button
             onClick={handleGenerate}
             disabled={loading}
@@ -126,6 +148,7 @@ const AdminDashboard: React.FC = () => {
           <h2 className="text-3xl font-bold font-display">Pré-visualização</h2>
           <article>
             <img src={generatedPost.imageUrl} alt="Generated" className="w-full h-auto max-h-96 object-cover rounded-lg mb-6"/>
+            <p className="text-md font-bold text-primary uppercase tracking-wider mb-2">{generatedPost.category}</p>
             <h3 className="text-4xl font-display font-bold mb-2">{generatedPost.title}</h3>
             <p className="text-xl text-text-muted italic mb-4">{generatedPost.deck}</p>
             <div className="prose max-w-none bg-white p-4 rounded border">
@@ -178,6 +201,14 @@ const AdminDashboard: React.FC = () => {
                     className="w-full p-3 bg-white border border-gray-300 rounded-lg mb-4"
                     placeholder="Um subtítulo conciso e atraente"
                 />
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                <select
+                    value={editingPost.category}
+                    onChange={(e) => setEditingPost({...editingPost, category: e.target.value})}
+                    className="w-full p-3 bg-white border border-gray-300 rounded-lg mb-4"
+                >
+                    {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Conteúdo (Markdown)</label>
                 <textarea 
                     value={editingPost.content}
@@ -200,10 +231,12 @@ const AdminDashboard: React.FC = () => {
             <div key={post.id} className="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center flex-wrap">
               <div className="flex-grow">
                 <h3 className="font-bold text-lg">{post.title}</h3>
-                <p className="text-sm text-text-muted">{formatFirebaseTimestamp(post.createdAt)}</p>
+                <p className="text-sm text-text-muted">
+                    <span className="font-semibold">{post.category}</span> - {formatFirebaseTimestamp(post.createdAt)}
+                </p>
               </div>
               <div className="flex space-x-2 mt-2 md:mt-0">
-                <button onClick={() => setEditingPost(post)} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm">Editar</button>
+                <button onClick={() => setEditingPost({ ...post, category: post.category || categories[0] })} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm">Editar</button>
                 <button onClick={() => handleDelete(post.id)} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">Deletar</button>
               </div>
             </div>

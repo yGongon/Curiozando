@@ -1,6 +1,3 @@
-
-
-
 // FIX: Switched to @firebase/app to resolve module export errors, likely caused by a dependency version mismatch.
 import { initializeApp, FirebaseApp } from '@firebase/app';
 // FIX: Removed firebase/analytics import as it was causing an error and was unused.
@@ -56,13 +53,25 @@ export type { User };
 export const getPosts = async (): Promise<Post[]> => {
   const q = query(postsCollection, orderBy('createdAt', 'desc'));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
+  return snapshot.docs.map(doc => {
+    const data = doc.data();
+    return { 
+      id: doc.id, 
+      ...data,
+      category: data.category || 'Curiosidades', // Default category for old posts
+    } as Post
+  });
 };
 
 export const getPost = async (id: string): Promise<Post | null> => {
     const postDoc = await getDoc(doc(db, 'posts', id));
     if (postDoc.exists()) {
-        return { id: postDoc.id, ...postDoc.data() } as Post;
+        const data = postDoc.data();
+        return { 
+            id: postDoc.id, 
+            ...data,
+            category: data.category || 'Curiosidades' // Default category for old posts
+        } as Post;
     }
     return null;
 }
@@ -75,7 +84,7 @@ export const addPost = async (post: Omit<Post, 'id' | 'createdAt'>): Promise<str
   return docRef.id;
 };
 
-export const updatePost = async (id:string, post: Partial<Pick<Post, 'title' | 'deck' | 'content'>>): Promise<void> => {
+export const updatePost = async (id:string, post: Partial<Pick<Post, 'title' | 'deck' | 'content' | 'category'>>): Promise<void> => {
   const postDoc = doc(db, 'posts', id);
   await updateDoc(postDoc, post);
 };
@@ -87,6 +96,7 @@ export const deletePost = async (id: string): Promise<void> => {
 
 export const formatFirebaseTimestamp = (timestamp: Timestamp | null | undefined): string => {
     if (!timestamp) return 'No date';
+    // FIX: Corrected typo from toLocaleDateDateString to toLocaleDateString.
     return new Date(timestamp.seconds * 1000).toLocaleDateString('pt-BR', {
       year: 'numeric',
       month: 'long',

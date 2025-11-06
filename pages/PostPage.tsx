@@ -18,6 +18,9 @@ const AdPlaceholder: React.FC<{ width: number; height: number; label: string }> 
   </div>
 );
 
+const categorySlug = (categoryName: string = 'curiosidades') =>
+  categoryName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+
 const ArticlePage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [post, setPost] = useState<Post | null>(null);
@@ -68,6 +71,9 @@ const ArticlePage: React.FC = () => {
     return (
         <article className="max-w-3xl mx-auto">
             <header className="mb-8">
+                <Link to={`/category/${categorySlug(post.category)}`} className="text-md font-bold text-primary uppercase tracking-wider mb-2 inline-block hover:underline">
+                    {post.category}
+                </Link>
                 <h1 className="text-3xl md:text-5xl font-display font-bold text-secondary my-3 leading-tight">
                     {post.title}
                 </h1>
@@ -93,18 +99,6 @@ const ArticlePage: React.FC = () => {
                 <a href="#" aria-label="Share on Twitter" className="p-3 bg-sky-500 text-white rounded-full hover:bg-sky-600 transition-colors"><Twitter size={20} /></a>
                 <a href="#" aria-label="Share on WhatsApp" className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"><MessageCircle size={20} /></a>
             </div>
-
-            {/* Related articles placeholder - would need a strategy to fetch actual related posts */}
-            {/* 
-            <section className="mt-16 border-t-2 pt-8">
-                <h2 className="font-display text-2xl font-bold text-secondary mb-6">Leia também</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {relatedArticles.map(related => (
-                        <PostCard key={related.id} post={related} />
-                    ))}
-                </div>
-            </section>
-            */}
         </article>
     );
 };

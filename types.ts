@@ -6,6 +6,7 @@ export interface Post {
   deck: string; // The subtitle or summary line
   content: string; // Markdown content
   imageUrl: string;
+  category: string;
   sources?: Array<{ title: string; uri: string; }>;
   createdAt: Timestamp;
 }
