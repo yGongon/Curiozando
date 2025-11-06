@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { generateBlogPostContent, generateBlogImage } from '../services/geminiService';
+import { generateBlogPostContent, generateBlogImage, generateThemeSuggestions } from '../services/geminiService';
 import { getPosts, addPost, deletePost, updatePost, formatFirebaseTimestamp } from '../services/firebase';
 import { Post } from '../types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Lightbulb } from 'lucide-react';
 
 const categories = ['Curiosidades', 'Fatos do Mundo', 'Mistérios', 'Ciência'];
 
@@ -25,6 +26,9 @@ const AdminDashboard: React.FC = () => {
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -38,6 +42,21 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
+
+  const handleSuggestThemes = async () => {
+    setSuggestionsLoading(true);
+    setSuggestionsError(null);
+    setSuggestions([]);
+    try {
+      const themes = await generateThemeSuggestions();
+      setSuggestions(themes);
+    } catch (err) {
+      setSuggestionsError(err instanceof Error ? err.message : 'Failed to get suggestions.');
+    } finally {
+      setSuggestionsLoading(false);
+    }
+  };
+
 
   const handleGenerate = async () => {
     if (!theme.trim()) {
@@ -112,13 +131,44 @@ const AdminDashboard: React.FC = () => {
         <h2 className="text-2xl font-bold font-display text-secondary mb-4">Gerar Novo Post</h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tema do Post</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-sm font-medium text-gray-700">Tema do Post</label>
+              <button
+                onClick={handleSuggestThemes}
+                disabled={suggestionsLoading}
+                className="flex items-center text-sm font-semibold text-secondary bg-gray-200 px-3 py-1 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-wait"
+              >
+                <Lightbulb size={16} className="mr-2 text-yellow-500" />
+                {suggestionsLoading ? 'Sugerindo...' : 'Sugerir Temas'}
+              </button>
+            </div>
             <textarea
               value={theme}
               onChange={(e) => setTheme(e.target.value)}
               placeholder="Digite um tema ou tópico para a IA escrever... ex: 'A história surpreendente do garfo'"
               className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none transition-all h-24"
             />
+            {suggestionsError && <p className="text-red-500 mt-2 text-sm">{suggestionsError}</p>}
+            {suggestions.length > 0 && (
+              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg animate-fade-in">
+                <h4 className="font-bold text-sm text-secondary mb-2">Que tal um destes temas?</h4>
+                <ul className="space-y-2">
+                  {suggestions.map((suggestion, index) => (
+                    <li key={index}>
+                      <button
+                        onClick={() => {
+                          setTheme(suggestion);
+                          setSuggestions([]); // Hide after selection
+                        }}
+                        className="text-left text-link hover:underline text-sm transition-colors duration-200"
+                      >
+                        "{suggestion}"
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
            <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>

@@ -85,7 +85,7 @@ const ArticlePage: React.FC = () => {
             
              <AdPlaceholder width={728} height={90} label="Anúncio no Artigo" />
 
-            <div className="prose lg:prose-xl max-w-none text-lg text-text-main">
+            <div className="prose prose-lg max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
             </div>
 

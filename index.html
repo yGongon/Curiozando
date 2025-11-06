@@ -28,6 +28,72 @@
               'sans': ['Inter', 'sans-serif'],
               'display': ['Poppins', 'sans-serif'],
             },
+            keyframes: {
+              'fade-in': {
+                '0%': { opacity: '0', transform: 'translateY(-10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+            },
+            animation: {
+              'fade-in': 'fade-in 0.5s ease-out forwards',
+            },
+            typography: (theme) => ({
+              DEFAULT: {
+                css: {
+                  '--tw-prose-body': theme('colors.text-main'),
+                  '--tw-prose-headings': theme('colors.secondary'),
+                  '--tw-prose-lead': theme('colors.text-muted'),
+                  '--tw-prose-links': theme('colors.link'),
+                  '--tw-prose-bold': theme('colors.text-main'),
+                  '--tw-prose-counters': theme('colors.text-muted'),
+                  '--tw-prose-bullets': theme('colors.primary'),
+                  '--tw-prose-hr': theme('colors.gray[200]'),
+                  '--tw-prose-quotes': theme('colors.secondary'),
+                  '--tw-prose-quote-borders': theme('colors.primary'),
+                  color: 'var(--tw-prose-body)',
+                  lineHeight: '1.75',
+                  h2: {
+                    fontFamily: theme('fontFamily.display').join(', '),
+                    fontWeight: '700',
+                    marginTop: '2em',
+                    marginBottom: '1em',
+                  },
+                  h3: {
+                    fontFamily: theme('fontFamily.display').join(', '),
+                    fontWeight: '700',
+                    marginTop: '1.8em',
+                    marginBottom: '0.8em',
+                  },
+                  'p, ul, ol': {
+                      marginBottom: '1.5em',
+                  },
+                  img: {
+                    borderRadius: theme('borderRadius.lg'),
+                    boxShadow: theme('boxShadow.md'),
+                    marginTop: '2.5em',
+                    marginBottom: '2.5em',
+                    marginLeft: 'auto',
+                    marginRight: 'auto',
+                  },
+                  a: {
+                    fontWeight: '600',
+                    textDecoration: 'none',
+                    transition: 'color 0.2s ease-in-out',
+                    '&:hover': {
+                      color: theme('colors.primary'),
+                      textDecoration: 'underline',
+                    },
+                  },
+                  blockquote: {
+                    fontWeight: '500',
+                    fontStyle: 'italic',
+                    borderLeftWidth: '0.25rem',
+                    paddingLeft: '1em',
+                    quotes: '"\\201C""\\201D""\\2018""\\2019"',
+                  },
+                },
+              },
+            }),
           },
         },
       }
